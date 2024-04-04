@@ -61,9 +61,9 @@ class ImageObj {
     this.image.src = source;
     }
     draw(){
-      if(img.complete) {
+      if(this.img.complete) {
         ctx.globalAlpha = 0.3;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height);
         ctx.globalAlpha = 1;
       }
     }
