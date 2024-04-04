@@ -256,6 +256,6 @@ var img = new Image();
 img.onload = function() {
     
 };
-img.src = 'img/20240331141022.jpg';
+img.src = '20240331141022.jpg';
 //Rozpoczęcie gry
 gameLoop();
