@@ -20,22 +20,20 @@ class DebugDisplay {
 }
 
 function draw() {
-  // Czyścimy canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  
 ctx.fillStyle = 'white';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
-backgroundImg.draw();
+imgBg.draw();
   boobieL.drawObject();
   boobieR.drawObject();
 constraintL.drawObject();
 constraintR.drawObject();
 }
 
-// 42Funkcja do aktualizacji kamery
 function updateCamera() {
-  // Ustawiamy kamerę na środku // camera.x = player.x - camera.width / 2;
-  //camera.y = player.y - camera.height / 2;
+ 
+camera.x = imgBg.width/2 - camera.width / 2;
+camera.y = imgBg.height/2 - camera.height / 2;
 }
 
 class GameObj {
@@ -58,15 +56,47 @@ class GameObj {
 class ImageObj {
   constructor(source) {
     this.img = new Image();
-    this.img.src = source;
+    
+this.width = 0;
+this.height = 0;
+this.img.onload = () => {
+        this.resizeImageToScreen();
+ 
+
+console.log('kudlej załadowany! '+this.img.width+' x '+this.img.height);
+console.log('kudlej przeskalowany! '+this.width+' x '+this.height);
+      };
+   this.img.src = source;
     }
     draw(){
-      if(this.img.complete) {
-        ctx.globalAlpha = 0.3;
-        ctx.drawImage(this.img, 0, 0, this.img.width, this.img.height);
+      if(!this.img.complete) 
+return;
+
+        ctx.globalAlpha = 0.4;
+        ctx.drawImage(this.img, 0-camera.x, 0-camera.y,this.width, this.height);
         ctx.globalAlpha = 1;
-      }
+      
     }
+ resizeImageToScreen() {
+    var screenWidth = window.innerWidth;
+    var screenHeight = window.innerHeight;
+
+    var imageRatio = this.img.width / this.img.height;
+
+    var screenRatio = screenWidth / screenHeight;
+
+    var newWidth = screenWidth;
+    var newHeight = screenHeight;
+
+    if (imageRatio > screenRatio) {  
+        newHeight = screenWidth / imageRatio;
+    } else {
+        newWidth = screenHeight * imageRatio;
+    }
+
+    this.width = newWidth; 
+    this.height= newHeight;
+  }
 }
 
 class NinePatchImageTransform {
@@ -259,6 +289,6 @@ console.log(boobieR.x);
 var springL = new Spring(boobieL, constraintL, 30, 0.2, 0.2);
 var springR = new Spring(boobieR, constraintR, 30, 0.2, 0.2);
 
-var backgroundImg = new ImageObj('20240331141022.jpg');
+var imgBg = new ImageObj('20240331141022.jpg');
 
 gameLoop();
