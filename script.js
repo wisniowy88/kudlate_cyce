@@ -57,8 +57,8 @@ class GameObj {
 
 class ImageObj {
   constructor(source) {
-    this.image = new Image();
-    this.image.src = source;
+    this.img = new Image();
+    this.img.src = source;
     }
     draw(){
       if(this.img.complete) {
@@ -258,8 +258,7 @@ console.log(boobieR.x);
 
 var springL = new Spring(boobieL, constraintL, 30, 0.2, 0.2);
 var springR = new Spring(boobieR, constraintR, 30, 0.2, 0.2);
-console.log(springL.point1.x);
-console.log(springR.point1.x);
+
 var backgroundImg = new ImageObj('20240331141022.jpg');
 
 gameLoop();
