@@ -25,11 +25,7 @@ function draw() {
   
 ctx.fillStyle = 'white';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
-if(img.complete) {
-ctx.globalAlpha = 0.3;
-ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-ctx.globalAlpha = 1;
-}
+backgroundImg.draw();
   boobieL.drawObject();
   boobieR.drawObject();
 constraintL.drawObject();
@@ -59,6 +55,19 @@ class GameObj {
   }
 }
 
+class ImageObj {
+  constructor(source) {
+    this.image = new Image();
+    this.image.src = source;
+    }
+    draw(){
+      if(img.complete) {
+        ctx.globalAlpha = 0.3;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.globalAlpha = 1;
+      }
+    }
+}
 
 class NinePatchImageTransform {
   constructor(imageData, top, right, bottom, left) {
@@ -251,11 +260,6 @@ var springL = new Spring(boobieL, constraintL, 30, 0.2, 0.2);
 var springR = new Spring(boobieR, constraintR, 30, 0.2, 0.2);
 console.log(springL.point1.x);
 console.log(springR.point1.x);
+var backgroundImg = new ImageObj('20240331141022.jpg');
 
-var img = new Image();
-img.onload = function() {
-    
-};
-img.src = '20240331141022.jpg';
-//Rozpoczęcie gry
 gameLoop();
