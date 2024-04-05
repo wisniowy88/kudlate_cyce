@@ -20,16 +20,22 @@ class DebugDisplay {
 }
 
 function draw() {
+  // Czyścimy canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  
 ctx.fillStyle = 'white';
 ctx.fillRect(0, 0, canvas.width, canvas.height);
 imgBg.draw();
-  boobieL.drawObject();
+
+  boobieL.drawObject();//line30
   boobieR.drawObject();
 constraintL.drawObject();
 constraintR.drawObject();
+bgTransformL.transformImage();
+bgTransformR.transformImage();
 }
 
+// 42Funkcja do aktualizacji kamery
 function updateCamera() {
  
 camera.x = imgBg.width/2 - camera.width / 2;
@@ -60,11 +66,13 @@ class ImageObj {
 this.width = 0;
 this.height = 0;
 this.img.onload = () => {
+console.log('kudlej załadowany! '+this.img.width+' x '+this.img.height);
         this.resizeImageToScreen();
  
 
 console.log('kudlej załadowany! '+this.img.width+' x '+this.img.height);
 console.log('kudlej przeskalowany! '+this.width+' x '+this.height);
+console.log('kudlej wyruchany! '+this.img.width+' x '+this.img.height);
       };
    this.img.src = source;
     }
@@ -72,7 +80,7 @@ console.log('kudlej przeskalowany! '+this.width+' x '+this.height);
       if(!this.img.complete) 
 return;
 
-        ctx.globalAlpha = 0.4;
+        ctx.globalAlpha = 0.6;
         ctx.drawImage(this.img, 0-camera.x, 0-camera.y,this.width, this.height);
         ctx.globalAlpha = 1;
       
@@ -96,69 +104,76 @@ return;
 
     this.width = newWidth; 
     this.height= newHeight;
+    this.img.width = newWidth;
+    this.img.height = newHeight;
   }
 }
 
 class NinePatchImageTransform {
-  constructor(imageData, top, right, bottom, left) {
-    this.imageData = imageData;
-    this.top = top;
-    this.right = right;
-    this.bottom = bottom;
-    this.left = left;
-    this.middleWidth = imageData.width - left - right;
-    this.middleHeight = imageData.height - top - bottom;
-    this.canvas = document.createElement('canvas');
-    this.ctx = this.canvas.getContext('2d');
-    this.canvas.width = imageData.width;
-    this.canvas.height = imageData.height;
-    this.ctx.drawImage(imageData, 0, 0);
+  constructor(imgBg, targetObj, ctx) {
+    this.imgBg = imgBg.img;
+    console.log(this.imgBg.width);
+
+    this.gameObj = targetObj;
+this.startObj = {...targetObj};
+
+this.ctx = ctx;
   }
 
   render() {
-    // Rysuj obrazek na canvasie
-    const img = new Image();
-    img.src = this.canvas.toDataURL();
-    document.body.appendChild(img);
+    // Draw the image on the canvas
+    //ctx.drawImage(this.imgBg, 0, 0);
   }
 
-  transformImage(dx, dy) {
-    // Środkowy kawałek - przesunięcie
-    this.ctx.clearRect(this.left, this.top, this.middleWidth, this.middleHeight);
-    this.ctx.drawImage(this.imageData, this.left + dx, this.top + dy, this.middleWidth, this.middleHeight, this.left + dx, this.top + dy, this.middleWidth, this.middleHeight);
-    
-    // Górny lewy kawałek - skalowanie poziome i pionowe
-    this.ctx.clearRect(0, 0, this.left, this.top);
-    this.ctx.drawImage(this.imageData, 0, 0, this.left, this.top, 0, 0, this.left, this.top);
-    
-    // Górny środkowy kawałek - skalowanie poziome
-    this.ctx.clearRect(this.left, 0, this.middleWidth, this.top);
-    this.ctx.drawImage(this.imageData, this.left, 0, this.middleWidth, this.top, this.left + dx, 0, this.middleWidth, this.top);
-    
-    // Górny prawy kawałek - skalowanie poziome i pionowe
-    this.ctx.clearRect(this.canvas.width - this.right, 0, this.right, this.top);
-    this.ctx.drawImage(this.imageData, this.imageData.width - this.right, 0, this.right, this.top, this.canvas.width - this.right, 0, this.right, this.top);
-    
-    // Lewy środkowy kawałek - skalowanie pionowe
-    this.ctx.clearRect(0, this.top, this.left, this.middleHeight);
-    this.ctx.drawImage(this.imageData, 0, this.top, this.left, this.middleHeight, 0, this.top + dy, this.left, this.middleHeight);
-    
-    // Prawy środkowy kawałek - skalowanie pionowe
-    this.ctx.clearRect(this.canvas.width - this.right, this.top, this.right, this.middleHeight);
-    this.ctx.drawImage(this.imageData, this.imageData.width - this.right, this.top, this.right, this.middleHeight, this.canvas.width - this.right, this.top + dy, this.right, this.middleHeight);
-    
-    // Dolny lewy kawałek - skalowanie poziome i pionowe
-    this.ctx.clearRect(0, this.canvas.height - this.bottom, this.left, this.bottom);
-    this.ctx.drawImage(this.imageData, 0, this.imageData.height - this.bottom, this.left, this.bottom, 0, this.canvas.height - this.bottom, this.left, this.bottom);
-    
-    // Dolny środkowy kawałek - skalowanie poziome
-    this.ctx.clearRect(this.left, this.canvas.height - this.bottom, this.middleWidth, this.bottom);
-    this.ctx.drawImage(this.imageData, this.left, this.imageData.height - this.bottom, this.middleWidth, this.bottom, this.left + dx, this.canvas.height - this.bottom, this.middleWidth, this.bottom);
-    
-    // Dolny prawy kawałek - skalowanie poziome i pionowe
-    this.ctx.clearRect(this.canvas.width - this.right, this.canvas.height - this.bottom, this.right, this.bottom);
-    this.ctx.drawImage(this.imageData, this.imageData.width - this.right, this.imageData.height - this.bottom, this.right, this.bottom, this.canvas.width - this.right, this.canvas.height - this.bottom, this.right, this.bottom);
-}
+  transformImage() {  
+const naturalRatioX = this.imgBg.naturalWidth / this.imgBg.width;
+console.log(this.imgBg.naturalWidth);
+
+    const naturalRatioY = this.imgBg.naturalHeight / this.imgBg.height;
+//console.log(naturalRatioX);
+//console.log(naturalRatioY);
+const gameObjX = this.gameObj.x - this.gameObj.width / 2-camera.x;
+    const gameObjY = this.gameObj.y - this.gameObj.height / 2-camera.y;
+const startObjX = this.startObj.x * naturalRatioX - this.startObj.width / 2;
+    const startObjY = this.startObj.y * naturalRatioY- this.startObj.height / 2;
+
+console.log("startObjX "+startObjX+" "+startObjY);
+    // Center patch - translation
+    //ctx.clearRect(gameObjX, gameObjY, this.gameObj.width, this.gameObj.height);
+    ctx.drawImage(this.imgBg, startObjX,startObjY, this.gameObj.width*naturalRatioX, this.gameObj.height, gameObjX, gameObjY, this.startObj.width, this.startObj.height);
+return;
+    // Top left patch
+    ctx.clearRect(0, 0, gameObjX, gameObjY);
+    ctx.drawImage(this.imgBg, 0, 0, gameObjX, gameObjY, 0, 0, gameObjX, gameObjY);
+
+    // Top center patch
+    ctx.clearRect(gameObjX, 0, this.gameObj.width, gameObjY);
+    ctx.drawImage(this.imgBg, gameObjX, 0, this.gameObj.width, gameObjY, gameObjX, 0, this.gameObj.width, gameObjY);
+
+    // Top right patch
+    ctx.clearRect(gameObjX + this.gameObj.width, 0, canvas.width - (gameObjX + this.gameObj.width), gameObjY);
+    ctx.drawImage(this.imgBg, gameObjX + this.gameObj.width, 0, canvas.width - (gameObjX + this.gameObj.width), gameObjY, gameObjX + this.gameObj.width, 0, canvas.width - (gameObjX + this.gameObj.width), gameObjY);
+
+    // Left center patch
+    ctx.clearRect(0, gameObjY, gameObjX, this.gameObj.height);
+    ctx.drawImage(this.imgBg, 0, gameObjY, gameObjX, this.gameObj.height, 0, gameObjY, gameObjX, this.gameObj.height);
+
+    // Right center patch
+    ctx.clearRect(gameObjX + this.gameObj.width, gameObjY, canvas.width - (gameObjX + this.gameObj.width), this.gameObj.height);
+    ctx.drawImage(this.imgBg, gameObjX + this.gameObj.width, gameObjY, canvas.width - (gameObjX + this.gameObj.width), this.gameObj.height, gameObjX + this.gameObj.width, gameObjY, canvas.width - (gameObjX + this.gameObj.width), this.gameObj.height);
+
+    // Bottom left patch
+    ctx.clearRect(0, gameObjY + this.gameObj.height, gameObjX, canvas.height - (gameObjY + this.gameObj.height));
+    ctx.drawImage(this.imgBg, 0, gameObjY + this.gameObj.height, gameObjX, canvas.height - (gameObjY + this.gameObj.height), 0, gameObjY + this.gameObj.height, gameObjX, canvas.height - (gameObjY + this.gameObj.height));
+
+    // Bottom center patch
+    ctx.clearRect(gameObjX, gameObjY + this.gameObj.height, this.gameObj.width, canvas.height - (gameObjY + this.gameObj.height));
+    ctx.drawImage(this.imgBg, gameObjX, gameObjY + this.gameObj.height, this.gameObj.width, canvas.height - (gameObjY + this.gameObj.height), gameObjX, gameObjY + this.gameObj.height, this.gameObj.width, canvas.height - (gameObjY + this.gameObj.height));
+
+    // Bottom right patch
+    ctx.clearRect(gameObjX + this.gameObj.width, gameObjY + this.gameObj.height, canvas.width - (gameObjX + this.gameObj.width), canvas.height - (gameObjY + this.gameObj.height));
+    ctx.drawImage(this.imgBg, gameObjX + this.gameObj.width, gameObjY + this.gameObj.height, canvas.width - (gameObjX + this.gameObj.width), canvas.height - (gameObjY + this.gameObj.height), gameObjX + this.gameObj.width, gameObjY + this.gameObj.height, canvas.width - (gameObjX + this.gameObj.width), canvas.height - (gameObjY + this.gameObj.height));
+  }
 }
 
 class Spring {
@@ -219,17 +234,17 @@ boobieR.applyMove();
 
 function debugDraw(){
 debug.y=10;
-debug.log('bbL.x: '+boobieL.x);
+debug.log('bbL.x: '+boobieL.x+' bbL.y: '+boobieL.y);
 debug.log('bbR.x: '+boobieR.x);
-debug.log('springL.stiffness: '+springL.stiffness);
-debug.log('springR.stiffness: '+springR.stiffness);
-debug.log('force.y: '+springL.forceY)
+debug.log('camera.x: '+camera.x);
+debug.log('camera.y: '+camera.y);
+debug.log('img.compltd:'+imgBg.img.complete);
 
 }
 // Główna pętla gry
 function gameLoop() {
   updatePhysics();
-  updateCamera();
+  //updateCamera();
   draw();
 debugDraw();
   
@@ -252,30 +267,35 @@ let camera = {
   width: canvas.width,
   height: canvas.height
 };
-
-// Pozycja bohatera
-let player = {
-  x: 98,
-  y: 150,
-dx:0,
-dy:0,
-  width: 50,
-  height: 50,
-color: 'orange'
-};
-let player2 = {...player};
-player2.x=202;
+const screenRatio=canvas.width/canvas.height;
+const boobsDistH=100;
+const boobsDistConstrV=50;
+const boobsPosTopLeft={x:150/screenRatio,y:200/screenRatio};
+const boobsSize=80;
 let constraint = {
-x: 100,
-y: 150,
+x: boobsPosTopLeft.x,
+y: boobsPosTopLeft.y,
 dx: NaN,
 dy: NaN,
 width:10,
 height:10,
 color: 'blue'
-}
+};
 let constraint2 = {...constraint};
-constraint2.x=200;
+constraint2.x+=boobsDistH;
+// Pozycja bohatera
+let player = {
+  x: constraint.x-2,
+  y: constraint.y+boobsDistConstrV,
+dx:0,
+dy:0,
+  width: boobsSize,
+  height: boobsSize,
+color: 'orange'
+};
+let player2 = {...player};
+player2.x=constraint2.x+2;
+
 console.log(canvas.width+" x "+canvas.height);
 const debug = new DebugDisplay(ctx);
 var lastTime=performance.now();
@@ -290,5 +310,7 @@ var springL = new Spring(boobieL, constraintL, 30, 0.2, 0.2);
 var springR = new Spring(boobieR, constraintR, 30, 0.2, 0.2);
 
 var imgBg = new ImageObj('20240331141022.jpg');
+var bgTransformL = new NinePatchImageTransform(imgBg, boobieL,ctx);
+var bgTransformR = new NinePatchImageTransform(imgBg, boobieR,ctx);
 
 gameLoop();
